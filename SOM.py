@@ -95,6 +95,7 @@ class SOM:
                 err_f.append(f)
                 
         
+    
     def set_som(self,sigma,learning_rate):
         '''
         initializes the network:
@@ -127,6 +128,7 @@ class SOM:
                 pickle.dump(self.som, outfile)
     
     
+    
     def load_model(self,som_file):
         '''
         Load the saved model
@@ -144,17 +146,23 @@ class SOM:
         
         self.coords = []
         err         = []
+        self.x      = []
+        self.y      = []
+        
         
         for d in self.data:
             try:
-                self.coords.append(np.array(self.som.winner(d)))
+                coord  = np.array(self.som.winner(d))
+                self.coords.append(coord)
+                self.x.append(coord[0])
+                self.y.append(coord[1])
             except:
                 #print("err with ",str(d))
                 err.append(d)
         
         #getting x,y points
-        self.x   = [i[0] for i in self.coords]
-        self.y   = [i[1] for i in self.coords]
+#        self.x   = [i[0] for i in self.coords]
+#        self.y   = [i[1] for i in self.coords]
         
         return self.x,self.y
         
