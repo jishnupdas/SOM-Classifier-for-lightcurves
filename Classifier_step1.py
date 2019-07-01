@@ -21,10 +21,6 @@ df         = pd.read_csv('low_period.csv')
 filenames  = list(df.filename)
 files      = [fpath+f for f in filenames] #make a list with fullpath to file
 
-
-#svpath     = '/home/astronomy/Documents/test_tess/classifierNN/1D_lc/'
-#impath     = '/home/astronomy/Documents/test_tess/classifierNN/1D_lc_plots/'
-
 svpath     = '/home/jishnu/Documents/TESS/tess_data/1D_lc/'
 impath     = '/home/jishnu/Documents/TESS/tess_data/1D_lc_plots/'
 
