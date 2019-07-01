@@ -221,33 +221,6 @@ class Lctools:
                 return False
 
     
-    
-    def try_harmonics(self):
-        '''make double and half periods'''
-        period     = self.period*2
-        phase      = np.remainder(self.jd,period)/period
-        phase_x2   = np.concatenate((phase,phase+1))
-        synth_phse = self.polyfit_lc(phase_x2,mag=self.magx2)
-        print(len(synth_phse))
-        
-
-        '''
-        EXAMPLES:
-        --------
-        pandas query
-        mean = closing_price.mean()
-        std = closing_price.std()
-        
-        newdf = df.query('@mean <= closing_price <= @std')
-        
-        db = df.query('0.1 <= phase <= 0.2') #easy way to query
-        
-        df = df[df['closing_price'].between(99, 101)]
-        
-        help:
-        https://stackoverflow.com/questions/31617845/how-to-select-rows-in-a-dataframe-between-two-values-in-python-pandas
-        '''
-        
     def phase_bin(self):
         x  = self.binarr
         df = self.df
@@ -280,17 +253,3 @@ class Lctools:
         plt.plot(phases,y,'.k',alpha=0.8)
         plt.show()
         plt.close()
-        
-
-"""
-# =============================================================================
-# Things to do
-# =============================================================================
-
-
-> refine phase_shift,check_duplicate functions
-
-> flag lightcurves for which changes have been made
-> 
-
-"""
