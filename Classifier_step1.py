@@ -13,19 +13,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 #%%
-#fpath      = '/media/astronomy/ExternalHDD/TESSDATA/lc_sector1/clean/'
-#file_list  = '/media/astronomy/ExternalHDD/TESSDATA/lc_sector1/clean/list_sec1'
-#
-#with open(file_list,'r') as fl_list:
-#    f_list = fl_list.readlines()[:20000]
-#
-#F = [i.strip('\n') for i in f_list]
-#files      = [fpath+f for f in F]
-#%%
 
-#fpath      = '/media/astronomy/ExternalHDD/TESSDATA/lc_sector1/clean/'
 fpath      = '/media/jishnu/ExternalHDD/TESSDATA/lc_sector1/clean/'
-#fpath      = '/home/jishnu/Documents/TESS/tess_data/files/'
 
 df         = pd.read_csv('low_period.csv')
 
