@@ -167,6 +167,7 @@ HJD         Magnitude   Error
 
 - **[USAGE.md](USAGE.md)** - Detailed usage instructions and examples
 - **[BENEFITS.md](BENEFITS.md)** - Use cases, benefits, and scientific applications
+- **[IMPROVEMENTS.md](IMPROVEMENTS.md)** - Gap analysis, best practices, and improvement recommendations
 
 ## Citation
 
