@@ -13,12 +13,15 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from astropy.timeseries import LombScargle
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+# Configure module logger
 logger = logging.getLogger(__name__)
+if not logger.handlers:
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    ))
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
 
 # Constants
 DEFAULT_BIN_LENGTH = 64
@@ -270,7 +273,11 @@ class Lctools:
         
         for i in range(1, len(x)):
             bins = df[df.phase.between(x[i-1], x[i])].mag
-            bn.append(np.mean(bins))
+            if len(bins) > 0:
+                bn.append(np.mean(bins))
+            else:
+                logger.warning(f"Empty bin at index {i}, using NaN")
+                bn.append(np.nan)
         self.bin1D = np.array(bn).astype('float')
         
         logger.debug(f"Phase binned lightcurve into {len(bn)} bins")

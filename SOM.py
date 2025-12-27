@@ -16,12 +16,15 @@ import seaborn as sns
 from minisom import MiniSom 
 import matplotlib.pyplot as plt
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+# Configure module logger
 logger = logging.getLogger(__name__)
+if not logger.handlers:
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    ))
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
 
 # Constants
 DEFAULT_NETWORK_SIZE = 50
@@ -89,11 +92,11 @@ class SOM:
             data = np.loadtxt(file)
             if np.isnan(data).any():
                 logger.warning(f"File contains NaN values: {file}")
-                return np.nan
+                return None
             return data
         except Exception as e:
             logger.error(f"Error loading file {file}: {e}")
-            return np.nan
+            return None
 
 
 
@@ -108,7 +111,7 @@ class SOM:
 
         for f in self.files:
             arr = self.get_arr(f)
-            if arr is not np.nan:
+            if arr is not None:
                 self.fnames.append(f)
                 self.data.append(arr)
             else:
