@@ -9,11 +9,23 @@ Created on Sat Jun 29 12:00:36 2019
 #%%
 import glob
 import pickle
+import logging
+from typing import Optional, List, Tuple
 import numpy as np
 import seaborn as sns
 from minisom import MiniSom 
 import matplotlib.pyplot as plt
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Constants
+DEFAULT_NETWORK_SIZE = 50
+DEFAULT_INPUT_LENGTH = 32
 
 #%%
 class SOM:
@@ -26,8 +38,11 @@ class SOM:
         
     '''
     
-    def __init__(self,files=None,data=None,som=None,network_h=None,
-                 network_w=None,coords=None,x=None,y=None,fnames=None):
+    def __init__(self, files: Optional[List[str]] = None, data: Optional[List[np.ndarray]] = None,
+                 som: Optional[MiniSom] = None, network_h: Optional[int] = None,
+                 network_w: Optional[int] = None, coords: Optional[List[np.ndarray]] = None,
+                 x: Optional[List[int]] = None, y: Optional[List[int]] = None,
+                 fnames: Optional[List[str]] = None) -> None:
         '''initializing all the necessary values
         
         Parameters:
@@ -47,44 +62,49 @@ class SOM:
         self.fnames    = fnames
         self.data      = data
         self.som       = som
-        self.network_h = 50
-        self.network_w = 50
+        self.network_h = network_h if network_h is not None else DEFAULT_NETWORK_SIZE
+        self.network_w = network_w if network_w is not None else DEFAULT_NETWORK_SIZE
         self.coords    = coords
         self.x         = x
         self.y         = y
         
         
         
-    def set_files(self,path):
+    def set_files(self, path: str) -> None:
         '''
         takes path to the files as arg; returns list of files in the path
         '''
-        self.files  = glob.glob(path+'*')
+        self.files = glob.glob(path + '*')
+        logger.info(f"Found {len(self.files)} files in {path}")
         
         
         
-    def get_arr(self,file):
+    def get_arr(self, file: str) -> np.ndarray:
         '''
         Get data from a file as an np array:
         reject files which has nan values in them
         nan can break the SOM classifier
         '''
-        data  = np.loadtxt(file)
-        if np.isnan(data).any() == True:
-            return np.nan
-        else:
+        try:
+            data = np.loadtxt(file)
+            if np.isnan(data).any():
+                logger.warning(f"File contains NaN values: {file}")
+                return np.nan
             return data
+        except Exception as e:
+            logger.error(f"Error loading file {file}: {e}")
+            return np.nan
 
 
 
-    def set_data(self):
+    def set_data(self) -> None:
         '''
         opens each file in the folder and reads the data
         into an array, and appends that to the data array
         if it doesnt contain any nan values
         '''
         
-        self.fnames,self.data,err_f = [],[],[]
+        self.fnames, self.data, err_f = [], [], []
 
         for f in self.files:
             arr = self.get_arr(f)
@@ -93,89 +113,111 @@ class SOM:
                 self.data.append(arr)
             else:
                 err_f.append(f)
+        
+        logger.info(f"Successfully loaded {len(self.data)} valid files")
+        if err_f:
+            logger.warning(f"Rejected {len(err_f)} files with NaN values")
                 
         
     
-    def set_som(self,sigma,learning_rate):
+    def set_som(self, sigma: float, learning_rate: float,
+                input_len: int = DEFAULT_INPUT_LENGTH) -> None:
         '''
         initializes the network:
         by default 50x50 with 0.1 sigma and 1.5 lr is initialized
         '''
         
-        self.som = MiniSom(x = self.network_h,y = self.network_w,
-                           input_len = 32, sigma = sigma,
-                           learning_rate = learning_rate)
+        self.som = MiniSom(x=self.network_h, y=self.network_w,
+                           input_len=input_len, sigma=sigma,
+                           learning_rate=learning_rate)
         
         self.som.random_weights_init(self.data)
-        #initialize random weights to the network
+        logger.info(f"Initialized SOM network: {self.network_h}x{self.network_w}, "
+                   f"sigma={sigma}, lr={learning_rate}")
         
         
     
-    def train_som(self,number):
+    def train_som(self, number: int) -> None:
         '''
-        tains the network with 'number' iterations by randomly taking
+        trains the network with 'number' iterations by randomly taking
         'number' of elements from the data array
         '''
+        logger.info(f"Starting SOM training for {number} iterations")
         self.som.train_random(self.data, number)
+        logger.info("SOM training completed")
         
         
         
-    def save_model(self,outfile):
+    def save_model(self, outfile: str) -> None:
         '''
         Save the trained model
         '''
-        with open(outfile+'.p', 'wb') as outfile:
-                pickle.dump(self.som, outfile)
+        try:
+            with open(outfile + '.p', 'wb') as f:
+                pickle.dump(self.som, f)
+            logger.info(f"Model saved to {outfile}.p")
+        except Exception as e:
+            logger.error(f"Failed to save model to {outfile}.p: {e}")
+            raise
     
     
     
-    def load_model(self,som_file):
+    def load_model(self, som_file: str) -> None:
         '''
         Load the saved model
         '''
-        with open(som_file, 'rb') as infile:
-            self.som = pickle.load(infile)
+        try:
+            with open(som_file, 'rb') as infile:
+                self.som = pickle.load(infile)
+            logger.info(f"Model loaded from {som_file}")
+        except FileNotFoundError as e:
+            logger.error(f"Model file not found: {som_file}")
+            raise
+        except Exception as e:
+            logger.error(f"Failed to load model from {som_file}: {e}")
+            raise
             
     
     
-    def get_coords(self):
+    def get_coords(self) -> Tuple[List[int], List[int]]:
         '''
         Runs each of the elements of the dataset through the SOM
         and gets the winner and appends it to the coords array
         '''
         
         self.coords = []
-        err         = []
-        self.x      = []
-        self.y      = []
+        err = []
+        self.x = []
+        self.y = []
         
         
         for d in self.data:
             try:
-                coord  = np.array(self.som.winner(d))
+                coord = np.array(self.som.winner(d))
                 self.coords.append(coord)
                 self.x.append(coord[0])
                 self.y.append(coord[1])
-            except:
-                #print("err with ",str(d))
+            except Exception as e:
+                logger.error(f"Error getting coordinates for data point: {e}")
                 err.append(d)
         
-        #getting x,y points
-#        self.x   = [i[0] for i in self.coords]
-#        self.y   = [i[1] for i in self.coords]
+        logger.info(f"Retrieved coordinates for {len(self.coords)} data points")
+        if err:
+            logger.warning(f"Failed to get coordinates for {len(err)} data points")
         
-        return self.x,self.y
+        return self.x, self.y
         
         
     
-    def plot_winners(self):
+    def plot_winners(self) -> None:
         
-        x,y = self.x,self.y
+        x, y = self.x, self.y
         
         plt.style.use('seaborn')
-        plt.figure(figsize=(9,9))
-        plt.plot(x,y,'.',alpha=0.15)
-        sns.kdeplot(x,y,cmap='Blues',shade=True,bw=1.5,shade_lowest=False,                    alpha=0.8)
+        plt.figure(figsize=(9, 9))
+        plt.plot(x, y, '.', alpha=0.15)
+        sns.kdeplot(x, y, cmap='Blues', shade=True, bw=1.5, shade_lowest=False, alpha=0.8)
         plt.show()
         plt.close()
+        logger.debug("Generated SOM winners plot")
 
