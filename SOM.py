@@ -215,10 +215,10 @@ class SOM:
         
         x, y = self.x, self.y
         
-        plt.style.use('seaborn')
+        plt.style.use('seaborn-v0_8')
         plt.figure(figsize=(9, 9))
         plt.plot(x, y, '.', alpha=0.15)
-        sns.kdeplot(x, y, cmap='Blues', shade=True, bw=1.5, shade_lowest=False, alpha=0.8)
+        sns.kdeplot(x=x, y=y, cmap='Blues', fill=True, bw_adjust=1.5, thresh=0, alpha=0.8)
         plt.show()
         plt.close()
         logger.debug("Generated SOM winners plot")

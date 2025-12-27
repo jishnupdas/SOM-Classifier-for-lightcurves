@@ -219,7 +219,7 @@ class Lctools:
         updates the internal dataframe with the shifted phase
         '''
         self.synth = self.polyfit_lc(self.phase2, self.magx2)
-        idx_mn = np.where(self.synth == max(self.synth))[0][0]
+        idx_mn = np.argmax(self.synth)
         self.pshift = self.phase2[idx_mn]
         if self.pshift > 1:
             self.pshift -= 1
@@ -274,7 +274,7 @@ class Lctools:
         for i in range(1, len(x)):
             bins = df[df.phase.between(x[i-1], x[i])].mag
             if len(bins) > 0:
-                bn.append(np.mean(bins))
+                bn.append(bins.mean())
             else:
                 logger.warning(f"Empty bin at index {i}, using NaN")
                 bn.append(np.nan)
@@ -297,7 +297,7 @@ class Lctools:
     def phased_plot(self, phases: np.ndarray, mag: np.ndarray) -> None:
         phases = np.concatenate((phases, [p + 1 for p in phases]))
         y = np.concatenate((mag, mag))
-        plt.style.use('seaborn')
+        plt.style.use('seaborn-v0_8')
         plt.figure(figsize=(9, 6))
         plt.title('Period : %.6f' % self.period)
         plt.xlabel('Phase')
