@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 
 # Configure module logger
 logger = logging.getLogger(__name__)
-if not logger.handlers:
+if not logger.hasHandlers():
     handler = logging.StreamHandler()
     handler.setFormatter(logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -82,7 +82,7 @@ class SOM:
         
         
         
-    def get_arr(self, file: str) -> np.ndarray:
+    def get_arr(self, file: str) -> Optional[np.ndarray]:
         '''
         Get data from a file as an np array:
         reject files which has nan values in them
@@ -123,15 +123,14 @@ class SOM:
                 
         
     
-    def set_som(self, sigma: float, learning_rate: float,
-                input_len: int = DEFAULT_INPUT_LENGTH) -> None:
+    def set_som(self, sigma: float, learning_rate: float) -> None:
         '''
         initializes the network:
         by default 50x50 with 0.1 sigma and 1.5 lr is initialized
         '''
-        
+        # Use DEFAULT_INPUT_LENGTH for input_len (maintains backward compatibility)
         self.som = MiniSom(x=self.network_h, y=self.network_w,
-                           input_len=input_len, sigma=sigma,
+                           input_len=DEFAULT_INPUT_LENGTH, sigma=sigma,
                            learning_rate=learning_rate)
         
         self.som.random_weights_init(self.data)

@@ -15,7 +15,7 @@ from astropy.timeseries import LombScargle
 
 # Configure module logger
 logger = logging.getLogger(__name__)
-if not logger.handlers:
+if not logger.hasHandlers():
     handler = logging.StreamHandler()
     handler.setFormatter(logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -83,7 +83,7 @@ class Lctools:
         
         '''
         try:
-            data = np.loadtxt(file, delimiter=' ').astype(np.float64)
+            data = np.loadtxt(file, delimiter=' ')
             if data.shape[1] != 3:
                 raise ValueError(f"Expected 3 columns, got {data.shape[1]}")
             self.file = file
@@ -191,10 +191,10 @@ class Lctools:
         self.df = self.df.reset_index()
         self.df = self.df.drop(['index'], axis=1)
         
-        self.jd = np.array(self.df.MJD).astype('float')
-        self.phase = np.array(self.df.phase).astype('float')
-        self.mag = np.array(self.df.mag).astype('float')
-        self.err = np.array(self.df.err).astype('float')
+        self.jd = np.array(self.df.MJD).astype(np.float64)
+        self.phase = np.array(self.df.phase).astype(np.float64)
+        self.mag = np.array(self.df.mag).astype(np.float64)
+        self.err = np.array(self.df.err).astype(np.float64)
         self.phase2 = np.concatenate((self.phase, self.phase + 1))
         self.magx2 = np.concatenate((self.mag, self.mag))
         
@@ -278,7 +278,7 @@ class Lctools:
             else:
                 logger.warning(f"Empty bin at index {i}, using NaN")
                 bn.append(np.nan)
-        self.bin1D = np.array(bn).astype('float')
+        self.bin1D = np.array(bn).astype(np.float64)
         
         logger.debug(f"Phase binned lightcurve into {len(bn)} bins")
         return self.bin1D
